@@ -607,6 +607,8 @@ public class SwingRoutingDriver{
                    if(mySwingRouting.topologyGUI == null)
                     mySwingRouting.topologyGUI = topologyGUI;
 
+                   //ini kodingan saya
+                   
                //Sgp sgp
                //= new Sgp(node); 
                 

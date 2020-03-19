@@ -194,8 +194,7 @@ public class ChApp implements AppInterface, CallbackInterface {
     /* Sensing the phenomena is most likely a periodic process. We wrote a procedure to do so.
      * Since the sensing() takes place at various simulation-time, this function should be called through a proxy reference, rather than directly to avoid
      * an infinite starvation loop */
-      public void sensing(List params)
-      {
+      public void sensing(List params){
         stats.updateCommonStats();
          statistik = JistAPI.getTime()/Constants.MINUTE+","
                      +stats.get(1).getValueAsString()+","
@@ -244,46 +243,29 @@ public class ChApp implements AppInterface, CallbackInterface {
                if (pertama){
                    System.out.println("[node]" + myNode.getID() + " start sensing ");
                    pertama=false;
-
-
                      myNode.getNodeGUI().colorCode.mark(colorProfileGeneric,colorProfileGeneric.SENSE,ColorProfile.FOREVER);
-
                }
 
-               MessageDataValue msgDataValue = new MessageDataValue(sensedValue,queryId,sequenceNumber,myNode.getID());
-              // msgDataValue.sequenceNumber;
-               msgDataValue.setFire();
-               CSGPWrapperMessage msgAgwSensing
-           	= new CSGPWrapperMessage(msgDataValue, sinkLocation,0, JistAPI.getTime());
+                MessageDataValue msgDataValue = new MessageDataValue(sensedValue,queryId,sequenceNumber,myNode.getID());
+                msgDataValue.setFire();
+                CSGPWrapperMessage msgAgwSensing = new CSGPWrapperMessage(msgDataValue, sinkLocation,0, JistAPI.getTime());
                 msgAgwSensing.messageID = "A:"+this.myNode.getIP().toString()+":"+this.sequenceSensing++;
                 long sleepMin = 0;
                 long sleepMax = myNode.clusterNeighbourList.size()/2;
                 Random s = new Random();
                 long sleeptime = (long) (sleepMin + (sleepMax - sleepMin) * s.nextDouble());
-                
-           
+               
                 JistAPI.sleepBlock((long) (sleeptime*0.1*Constants.SECOND));
-                
-                //------------
-                //System.out.println("Node : [" + myNode.getID()+ "]" + " app layer send to network layer");
-                
-                
-              //  netEntity.send(msgAgwSensing,
-        //		   		  sinkAddress,
-       // 		   		  routingProtocolIndex,
-        //		   		  Constants.NET_PRIORITY_NORMAL, (byte)40);
-                 netEntity.send(msgAgwSensing,
+     
+                netEntity.send(msgAgwSensing,
         		   		  sinkAddress,
         		   		  routingProtocolIndex,
         		   		  Constants.NET_PRIORITY_NORMAL, (byte)60);
-               stats.markPacketSent("data_sensing", sequenceNumber);
+                stats.markPacketSent("data_sensing", sequenceNumber);
            
-          
-         
            }
                 
-                if (JistAPI.getTime() < endTime)
-            {
+            if (JistAPI.getTime() < endTime){
            //     sequenceNumber++;
                 
                 params.set(0, samplingInterval);
@@ -357,12 +339,12 @@ public class ChApp implements AppInterface, CallbackInterface {
     public boolean isSensing( int nodeId){
         boolean status =false;
 
-        for (int i=0;i < Konstanta.sourceNodes3.length;i++)
-        {
-            if (Konstanta.sourceNodes3[i]== nodeId){
+        for (int i=0;i < Konstanta.sourceNodes.length;i++){
+            if (Konstanta.sourceNodes[i]== nodeId){
+                
                 return true;
+                //kalo shortestpath dijalankan semua node
             }
-
         }
 
         return status;
@@ -388,8 +370,6 @@ public class ChApp implements AppInterface, CallbackInterface {
                     
                     startedSensing = true;
                     
-                    
-
                     LinkedList params = new LinkedList();
                     params.add(msgQuery.getQuery().getSamplingInterval());   /* sampling interval */
                     params.add(JistAPI.getTime()/Constants.MILLI_SECOND + msgQuery.getQuery().getEndTime()); /* endTime */
@@ -418,8 +398,9 @@ public class ChApp implements AppInterface, CallbackInterface {
         if (msg instanceof MessageDataValue) {  
         	 MessageDataValue msgData = (MessageDataValue)msg;
            if(msgData.isFire()==true){
+             //untuk menandai jenis node apakah ini(?)
              
-             stats.markPacketReceived("data_sensing", msgData.sequenceNumber);
+             stats.markPacketReceived("data_sensing", msgData.sequenceNumber); //harusnya selain ini ada lagi
              myNode.getNodeGUI().setUserDefinedData1((int)msgData.dataValue);
              myNode.getNodeGUI().setUserDefinedData2((int)msgData.sequenceNumber);
 

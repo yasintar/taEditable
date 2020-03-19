@@ -9,8 +9,11 @@
 
 package sidnet.stack.users.csgp.routing;
 
+import java.awt.Color;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import jist.runtime.JistAPI;
 import jist.swans.Constants;
 import sidnet.core.interfaces.AppInterface;
@@ -20,16 +23,19 @@ import jist.swans.net.NetAddress;
 import jist.swans.net.NetInterface;
 import jist.swans.net.NetMessage;
 import jist.swans.route.RouteInterface;
+import sidnet.core.gui.TopologyGUI;
 import sidnet.stack.users.csgp.colorprofile.CSGPColorProfile;
 import sidnet.core.misc.Location2D;
 import sidnet.core.misc.Node;
 import sidnet.core.misc.NodeEntry;
 import sidnet.core.misc.Reason;
 import sidnet.core.misc.Region;
+import sidnet.stack.users.csgp.app.Konstanta;
 
 import sidnet.stack.users.csgp.app.MessageQuery;
 import sidnet.stack.users.csgp.app.MessageDataValue;
 import sidnet.stack.users.csgp.driver.SwingRoutingDriver;
+import static sidnet.stack.users.csgp.routing.SwingRouting.topologyGUI;
 
 /**
  *
@@ -40,7 +46,18 @@ public class ShortestGeoPath implements RouteInterface {
     public static final byte SUCCESS = 0;
     public static int drop=0;
     public static int terkirim;
+    public Node[] NodeList;
+    
     private final Node myNode; // The SIDnet handle to the node representation 
+    private String travelPathtoSink="";
+    //private String idSink="199";
+    private String travelList;
+    private boolean cekTetangga=false;
+    private int urutan =0;
+    private String availablePathList="";
+    public String[] jalurLagi; 
+    List<NetAddress> forwardingNodes = null; // variabel  forwarding node
+  //  List<NetAddress> holeNodes = new ArrayList <NetAddress>();
     
     // entity hook-up (network stack)
     /** Network entity. */
@@ -190,6 +207,15 @@ public class ShortestGeoPath implements RouteInterface {
       * (unicast pesan ke masing-masing leaves) asumsi 1 nodes 2 leaves
       * kemudian lempar ke app layer
       */
+     
+      private int getIdfromAddress(NetAddress na){
+
+         String tempIp = na.getIP().getHostAddress();
+         int hc= na.getIP().hashCode();
+         return hc;
+    }
+     
+     
      private void handleQueryMessage(NetMessage msg) {
         sidnet.stack.users.csgp.routing.CSGPWrapperMessage msgAGW
     	 	= (CSGPWrapperMessage)((NetMessage.Ip)msg).getPayload();
@@ -301,26 +327,28 @@ public class ShortestGeoPath implements RouteInterface {
      }
 
     private void handleMessageDataValue(NetMessage msg, Location2D targetLocation) {
-         
+         List<NetAddress> list = new ArrayList<NetAddress>();
          myNode.getEnergyManagement().getBattery().getPercentageEnergyLevel();
          
          CSGPWrapperMessage msgAGW
     	 	= (CSGPWrapperMessage)((NetMessage.Ip)msg).getPayload();
 
-
-        NetAddress ip= ((NetMessage.Ip)msg).getDst();
+        NetAddress ip= ((NetMessage.Ip)msg).getDst(); //tujuannya adalah sink node
         NetAddress nextHop;
         nextHop = getThroughShortestPath(targetLocation); 
         NetAddress currIP = myNode.getIP();
-
+        
+//        this.availablePathList = this.availablePathList + ((MessageDataValue) msgAGW.getPayload()).getPathList();
+//        jalurLagi = availablePathList.split(",", 100);
+        
         if (nextHop.hashCode() == this.myNode.getIP().hashCode()){
                    sendToAppLayer(msgAGW.getPayload(), null);
                   // terkirim++;
               }
+        
         /// jika dia bukan sink node (destination)
-
             if(msgAGW.getStatus()==false){
-                 msgAGW.setStatus();
+                msgAGW.setStatus();
                 NetMessage.Ip copyOfMsg
                   = new NetMessage.Ip(msgAGW,
                          ((NetMessage.Ip)msg).getSrc(),
@@ -334,10 +362,16 @@ public class ShortestGeoPath implements RouteInterface {
            //kirim ke semua node tetangga FLOODING INI !!!
 
                   sendToLinkLayer(copyOfMsg, nextHop);
-
-
+                  
+//                  System.out.println("TES");                  
+                  System.out.println("Node [" + myNode.getID() + "]  forward  to " + nextHop);
+                  
+//                  if (Konstanta.isDraw){
+//                    topologyGUI.addLink(myNode.getID(), this.getIdfromAddress(nextHop), 1, Color.BLUE, TopologyGUI.HeadType.LEAD_ARROW);
+//                  }
            // System.out.println("Node " + myNode.getID() + " forwarding Sensing Message to cluster head "+nextHop.getIP());
-
+           
+           //jika merupakan sink
             }else if(msgAGW.getStatus()==true){
                   //msgAGW.setStatus();
                  NetMessage.Ip copyOfMsg
@@ -353,6 +387,13 @@ public class ShortestGeoPath implements RouteInterface {
            //kirim ke semua node tetangga FLOODING INI !!!
 
                   sendToLinkLayer(copyOfMsg, nextHop);
+                  
+//                   System.out.println("TES");
+                  System.out.println("Node [" + myNode.getID() + "]  forward  to sink node " + nextHop);
+                  
+//                  if (Konstanta.isDraw){
+//                    topologyGUI.addLink(myNode.getID(), this.getIdfromAddress(nextHop), 1, Color.BLUE, TopologyGUI.HeadType.LEAD_ARROW);
+//                  }
 
           }
             else{
@@ -361,129 +402,129 @@ public class ShortestGeoPath implements RouteInterface {
      }
      
      
-     private void handleMessageDataValueOri(NetMessage msg, Location2D targetLocation) {
-         
-         myNode.getEnergyManagement().getBattery().getPercentageEnergyLevel();
-         
-         CSGPWrapperMessage msgAGW
-    	 	= (CSGPWrapperMessage)((NetMessage.Ip)msg).getPayload();
+    private void handleMessageDataValueOri(NetMessage msg, Location2D targetLocation) {
+
+        myNode.getEnergyManagement().getBattery().getPercentageEnergyLevel();
+
+        CSGPWrapperMessage msgAGW
+               = (CSGPWrapperMessage)((NetMessage.Ip)msg).getPayload();
 
 
-      NetAddress ip= ((NetMessage.Ip)msg).getDst();
-      NetAddress nextHop;
-      nextHop = getThroughShortestPath(targetLocation); 
-      NetAddress currIP = myNode.getIP();
-      
-      if (nextHop.hashCode() == this.myNode.getIP().hashCode()){
-        	 sendToAppLayer(msgAGW.getPayload(), null);
-                // terkirim++;
-            }
-      /// jika dia bukan sink node (destination)
-     
-          if(msgAGW.getStatus()==false){
-               msgAGW.setStatus();
+     NetAddress ip= ((NetMessage.Ip)msg).getDst();
+     NetAddress nextHop;
+     nextHop = getThroughShortestPath(targetLocation); 
+     NetAddress currIP = myNode.getIP();
+
+     if (nextHop.hashCode() == this.myNode.getIP().hashCode()){
+                sendToAppLayer(msgAGW.getPayload(), null);
+               // terkirim++;
+           }
+     /// jika dia bukan sink node (destination)
+
+         if(msgAGW.getStatus()==false){
+              msgAGW.setStatus();
+             NetMessage.Ip copyOfMsg
+               = new NetMessage.Ip(msgAGW,
+                      ((NetMessage.Ip)msg).getSrc(),
+                      ((NetMessage.Ip)msg).getDst(),
+                      ((NetMessage.Ip)msg).getProtocol(),
+                      ((NetMessage.Ip)msg).getPriority(),
+                      ((NetMessage.Ip)msg).getTTL(),
+                      ((NetMessage.Ip)msg).getId(),
+                      ((NetMessage.Ip)msg).getFragOffset());
+
+        //kirim ke semua node tetangga FLOODING INI !!!
+
+               sendToLinkLayer(copyOfMsg, nextHop);
+
+
+         //  System.out.println("Node " + myNode.getID() + " forwarding Sensing Message to cluster head "+nextHop.getIP());
+
+         }else if(msgAGW.getStatus()==true){
+               //msgAGW.setStatus();
               NetMessage.Ip copyOfMsg
-              	= new NetMessage.Ip(msgAGW,
-		       ((NetMessage.Ip)msg).getSrc(),
-                       ((NetMessage.Ip)msg).getDst(),
-                       ((NetMessage.Ip)msg).getProtocol(),
-                       ((NetMessage.Ip)msg).getPriority(),
-                       ((NetMessage.Ip)msg).getTTL(),
-                       ((NetMessage.Ip)msg).getId(),
-                       ((NetMessage.Ip)msg).getFragOffset());
+               = new NetMessage.Ip(msgAGW,
+                      ((NetMessage.Ip)msg).getSrc(),
+                      ((NetMessage.Ip)msg).getDst(),
+                      ((NetMessage.Ip)msg).getProtocol(),
+                      ((NetMessage.Ip)msg).getPriority(),
+                      ((NetMessage.Ip)msg).getTTL(),
+                      ((NetMessage.Ip)msg).getId(),
+                      ((NetMessage.Ip)msg).getFragOffset());
 
-         //kirim ke semua node tetangga FLOODING INI !!!
+        //kirim ke semua node tetangga FLOODING INI !!!
 
-                sendToLinkLayer(copyOfMsg, nextHop);
-               
+               sendToLinkLayer(copyOfMsg, nextHop);
 
-          //  System.out.println("Node " + myNode.getID() + " forwarding Sensing Message to cluster head "+nextHop.getIP());
-               
-          }else if(msgAGW.getStatus()==true){
-                //msgAGW.setStatus();
-               NetMessage.Ip copyOfMsg
-              	= new NetMessage.Ip(msgAGW,
-		       ((NetMessage.Ip)msg).getSrc(),
-                       ((NetMessage.Ip)msg).getDst(),
-                       ((NetMessage.Ip)msg).getProtocol(),
-                       ((NetMessage.Ip)msg).getPriority(),
-                       ((NetMessage.Ip)msg).getTTL(),
-                       ((NetMessage.Ip)msg).getId(),
-                       ((NetMessage.Ip)msg).getFragOffset());
 
-         //kirim ke semua node tetangga FLOODING INI !!!
 
-                sendToLinkLayer(copyOfMsg, nextHop);
-              
 
-          
-          
+       }
+         else{
+             System.out.println("unknown destination IP");
+         }
+    }
+
+    private void handleWithTargetLocation(Location2D targetLocation,NetMessage msg) {
+        CSGPWrapperMessage msgSGP
+               = (CSGPWrapperMessage)((NetMessage.Ip)msg).getPayload();
+
+        // Retrieve the IP address of the 1-hop neighbor
+        // closest to the area of interest */
+        NetAddress nextHopIP = getThroughShortestPath(targetLocation);
+
+        // If there is no node closer to the area of interest than this node, 
+        // then this node will get the message
+        if (nextHopIP.hashCode() == myNode.getIP().hashCode()){
+                sendToAppLayer(msgSGP.getPayload(), null);
+        terkirim++;
         }
-          else{
-              System.out.println("unknown destination IP");
-          }
-     }
+        else { // keep forwarding
+                 // first, make a copy of the message
+             NetMessage.Ip copyOfMsg 
+               = new NetMessage.Ip(msgSGP,
+                                          ((NetMessage.Ip)msg).getSrc(),
+                      ((NetMessage.Ip)msg).getDst(),
+                      ((NetMessage.Ip)msg).getProtocol(),
+                      ((NetMessage.Ip)msg).getPriority(), 
+                      ((NetMessage.Ip)msg).getTTL(),
+                      ((NetMessage.Ip)msg).getId(),
+                      ((NetMessage.Ip)msg).getFragOffset());
 
-     private void handleWithTargetLocation(Location2D targetLocation,NetMessage msg) {
-    	 CSGPWrapperMessage msgSGP
-    	 	= (CSGPWrapperMessage)((NetMessage.Ip)msg).getPayload();
-    	 
-    	 // Retrieve the IP address of the 1-hop neighbor
-    	 // closest to the area of interest */
-         NetAddress nextHopIP = getThroughShortestPath(targetLocation);
-         
-    	 // If there is no node closer to the area of interest than this node, 
-    	 // then this node will get the message
-         if (nextHopIP.hashCode() == myNode.getIP().hashCode()){
-        	 sendToAppLayer(msgSGP.getPayload(), null);
-         terkirim++;
-         }
-         else { // keep forwarding
-        	  // first, make a copy of the message
-              NetMessage.Ip copyOfMsg 
-              	= new NetMessage.Ip(msgSGP,
-					   ((NetMessage.Ip)msg).getSrc(),
-                       ((NetMessage.Ip)msg).getDst(),
-                       ((NetMessage.Ip)msg).getProtocol(),
-                       ((NetMessage.Ip)msg).getPriority(), 
-                       ((NetMessage.Ip)msg).getTTL(),
-                       ((NetMessage.Ip)msg).getId(),
-                       ((NetMessage.Ip)msg).getFragOffset());
-              
-             sendToLinkLayer(copyOfMsg, nextHopIP);
-         }
-     }
-     
-     /** Find the closest vertex. 
-	  * A query may contain a region of interest.
-	  * Since this is SGP routing, 
-	  * we look for the closest vertex of that region 
-	  */
-     private Location2D extractClosestVertex(Region targetRegion) {    
-         targetRegion.resetIterator();
-             
-         Location2D nextLoc 
-         	= targetRegion.getNext()
-         				  .convertTo(targetRegion.getLocationContext(),
-         						     myNode.getLocationContext());;
-         Location2D closestVertex = nextLoc;
-            
-         double distMin 
-         	= nextLoc.distanceTo(myNode.getLocation2D());
-             
-         while (targetRegion.hasNext()) {
-             nextLoc = targetRegion.getNext();
-             Location2D actualLoc 
-             	= nextLoc.convertTo(targetRegion.getLocationContext(),
-             						myNode.getLocationContext());
-             if (actualLoc.distanceTo(myNode.getLocation2D()) < distMin) {
-                 distMin = actualLoc.distanceTo(myNode.getLocation2D());
-                 closestVertex = actualLoc;
-             }
-         }         
-         return closestVertex;
-     }
-    
+            sendToLinkLayer(copyOfMsg, nextHopIP);
+        }
+    }
+
+    /** Find the closest vertex. 
+         * A query may contain a region of interest.
+         * Since this is SGP routing, 
+         * we look for the closest vertex of that region 
+         */
+    private Location2D extractClosestVertex(Region targetRegion) {    
+        targetRegion.resetIterator();
+
+        Location2D nextLoc 
+               = targetRegion.getNext()
+                                         .convertTo(targetRegion.getLocationContext(),
+                                                            myNode.getLocationContext());;
+        Location2D closestVertex = nextLoc;
+
+        double distMin 
+               = nextLoc.distanceTo(myNode.getLocation2D());
+
+        while (targetRegion.hasNext()) {
+            nextLoc = targetRegion.getNext();
+            Location2D actualLoc 
+               = nextLoc.convertTo(targetRegion.getLocationContext(),
+                                                       myNode.getLocationContext());
+            if (actualLoc.distanceTo(myNode.getLocation2D()) < distMin) {
+                distMin = actualLoc.distanceTo(myNode.getLocation2D());
+                closestVertex = actualLoc;
+            }
+        }         
+        return closestVertex;
+    }
+
      
     public void sendToAppLayer(Message msg, NetAddress src)
     {

@@ -263,7 +263,7 @@ public class SwingRouting implements RouteInterface {
         } else if (msgSGP.getPayload() instanceof MessageDataValue) {
             //System.out.println("Node " + myNode.getID() + " get data value message");
             //handleMessageDataValue3(msg, targetLocation);
-            handleMessageDataValueOri(msg, targetLocation);
+            handleMessageDataValueTA(msg, targetLocation);
         } else {
             //System.out.println("Node " + myNode.getID() + " get unknown message");
         }
@@ -728,7 +728,7 @@ public NetAddress getThroughShortestPath(Location2D destLocation) {
         return closestNode;
     }   
 
-     
+
      
      private void handleMessageDataValueOri(NetMessage msg, Location2D targetLocation) {
          
@@ -794,7 +794,80 @@ public NetAddress getThroughShortestPath(Location2D destLocation) {
           }
      }
 
+     private void handleMessageDataValueTA(NetMessage msg, Location2D targetLocation) {
+        List<NetAddress> list = new ArrayList<NetAddress>();
+        myNode.getEnergyManagement().getBattery().getPercentageEnergyLevel();
+         
+        CSGPWrapperMessage msgAGW = (CSGPWrapperMessage)((NetMessage.Ip)msg).getPayload();
 
+        NetAddress ip= ((NetMessage.Ip)msg).getDst(); //tujuannya adalah sink node
+        NetAddress nextHop;
+        nextHop = getThroughShortestPath(targetLocation); 
+        NetAddress currIP = myNode.getIP();
+        
+//        this.availablePathList = this.availablePathList + ((MessageDataValue) msgAGW.getPayload()).getPathList();
+//        jalurLagi = availablePathList.split(",", 100);
+        
+        if (nextHop.hashCode() == this.myNode.getIP().hashCode()){
+                   sendToAppLayer(msgAGW.getPayload(), null);
+                  // terkirim++;
+              }
+        
+        /// jika dia bukan sink node (destination)
+            if(msgAGW.getStatus()==false){
+                msgAGW.setStatus();
+                NetMessage.Ip copyOfMsg
+                  = new NetMessage.Ip(msgAGW,
+                         ((NetMessage.Ip)msg).getSrc(),
+                         ((NetMessage.Ip)msg).getDst(),
+                         ((NetMessage.Ip)msg).getProtocol(),
+                         ((NetMessage.Ip)msg).getPriority(),
+                         ((NetMessage.Ip)msg).getTTL(),
+                         ((NetMessage.Ip)msg).getId(),
+                         ((NetMessage.Ip)msg).getFragOffset());
+
+           //kirim ke semua node tetangga FLOODING INI !!!
+
+                  sendToLinkLayer(copyOfMsg, nextHop);
+                  
+//                  System.out.println("TES");                  
+                  System.out.println("Node [" + myNode.getID() + "]  forward  to " + nextHop);
+                  
+//                  if (Konstanta.isDraw){
+//                    topologyGUI.addLink(myNode.getID(), this.getIdfromAddress(nextHop), 1, Color.BLUE, TopologyGUI.HeadType.LEAD_ARROW);
+//                  }
+           // System.out.println("Node " + myNode.getID() + " forwarding Sensing Message to cluster head "+nextHop.getIP());
+           
+           //jika merupakan sink
+            }else if(msgAGW.getStatus()==true){
+                  //msgAGW.setStatus();
+                 NetMessage.Ip copyOfMsg
+                  = new NetMessage.Ip(msgAGW,
+                         ((NetMessage.Ip)msg).getSrc(),
+                         ((NetMessage.Ip)msg).getDst(),
+                         ((NetMessage.Ip)msg).getProtocol(),
+                         ((NetMessage.Ip)msg).getPriority(),
+                         ((NetMessage.Ip)msg).getTTL(),
+                         ((NetMessage.Ip)msg).getId(),
+                         ((NetMessage.Ip)msg).getFragOffset());
+
+           //kirim ke semua node tetangga FLOODING INI !!!
+
+                  sendToLinkLayer(copyOfMsg, nextHop);
+                  
+//                   System.out.println("TES");
+                  System.out.println("Node [" + myNode.getID() + "]  forward  to sink node " + nextHop);
+                  
+//                  if (Konstanta.isDraw){
+//                    topologyGUI.addLink(myNode.getID(), this.getIdfromAddress(nextHop), 1, Color.BLUE, TopologyGUI.HeadType.LEAD_ARROW);
+//                  }
+
+          }
+          else{
+                System.out.println("unknown destination IP");
+            }
+     }
+     
      private void handleMessageDataValue3(NetMessage msg, Location2D targetLocation) {
 
          List<NetAddress> list = new ArrayList<NetAddress>();
