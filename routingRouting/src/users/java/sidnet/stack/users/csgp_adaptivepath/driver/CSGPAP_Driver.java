@@ -72,8 +72,8 @@ public class CSGPAP_Driver {
     public static String sgp,csgp,randomCH,adaptivePath;
  
 //**Define the battery-type for the nodes 75mAh should give enough juice for 24-48h*/
-    public static Battery battery=new IdealBattery(BatteryUtils.mAhToMJ(40,3),3); //pernode
-    public static Battery batterysink=new IdealBattery(BatteryUtils.mAhToMJ(80,3),3);
+    public static Battery battery=new IdealBattery(BatteryUtils.mAhToMJ(75,3),3); //pernode
+    public static Battery batterysink=new IdealBattery(BatteryUtils.mAhToMJ(9999999,3),3);
     
 /**Define the power consumption characteristics of nodes, based on Mica Mote MPR500CA*/
     public static  EnergyConsumptionParameters eCostParam=new EnergyConsumptionParameters( //konsumsi

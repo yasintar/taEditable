@@ -244,8 +244,8 @@ public class CSGPAP_App implements AppInterface, CallbackInterface {
 
         //awalnya semua create normal
         double sensedValue;
-        double rangeMinN = 18;
-        double rangeMaxN = 32;
+        double rangeMinN = 17;
+        double rangeMaxN = 31;
         Random rn = new Random();
         double normalTemp = rangeMinN + (rangeMaxN - rangeMinN) * rn.nextDouble();
         sensedValue = normalTemp;
@@ -253,8 +253,8 @@ public class CSGPAP_App implements AppInterface, CallbackInterface {
        //pada waktu tertentu
            //naik /abnormal
            if(JistAPI.getTime()/Constants.MINUTE>100 && JistAPI.getTime()/Constants.MINUTE<=150){
-                double rangeMin3 = 33;
-                double rangeMax3 = 43;
+                double rangeMin3 = 32;
+                double rangeMax3 = 42;
                 Random r3 = new Random();
                 double abnormalTemp = rangeMin3 + (rangeMax3 - rangeMin3) * r3.nextDouble();
                 sensedValue = abnormalTemp;
@@ -262,8 +262,9 @@ public class CSGPAP_App implements AppInterface, CallbackInterface {
 
            //kebakaran /fire
            if(JistAPI.getTime()/Constants.MINUTE>150 && JistAPI.getTime()/Constants.MINUTE<=200){
-                double rangeMin2 = 44;
-                double rangeMax2 = 110;
+               
+               double rangeMin2 = 43;
+                double rangeMax2 = 109;
                 Random r2 = new Random();
                 double fireTemp = rangeMin2 + (rangeMax2 - rangeMin2) * r2.nextDouble();
                 sensedValue = fireTemp;
@@ -271,17 +272,42 @@ public class CSGPAP_App implements AppInterface, CallbackInterface {
                 
            //turun /abnormal
            if(JistAPI.getTime()/Constants.MINUTE> 200 && JistAPI.getTime()/Constants.MINUTE < 240){
-                double rangeMin = 33;
-                double rangeMax = 43;
+                double rangeMin = 32;
+                double rangeMax = 42;
                 Random r = new Random();
                 double abnormalTemp = rangeMin + (rangeMax - rangeMin) * r.nextDouble();
                 sensedValue = abnormalTemp;
                 }
            
-//        double avgValue = 0;
-//        double temp =0;
+            if(JistAPI.getTime()/Constants.MINUTE>900 && JistAPI.getTime()/Constants.MINUTE<=950){
+                double rangeMin3 = 32;
+                double rangeMax3 = 42;
+                Random r3 = new Random();
+                double abnormalTemp = rangeMin3 + (rangeMax3 - rangeMin3) * r3.nextDouble();
+                sensedValue = abnormalTemp;
+                } 
+                   
+           //kebakaran
+           if(JistAPI.getTime()/Constants.MINUTE>950 && JistAPI.getTime()/Constants.MINUTE<=1100){
+                double rangeMin2 = 43;
+                double rangeMax2 = 109;
+                Random r2 = new Random();
+                double fireTemp = rangeMin2 + (rangeMax2 - rangeMin2) * r2.nextDouble();
+                sensedValue = fireTemp;
+                }
+           
+           //turun
+           if(JistAPI.getTime()/Constants.MINUTE> 1100 && JistAPI.getTime()/Constants.MINUTE < 1500){
+           //abnormal temperature
+                double rangeMin = 32;
+                double rangeMax = 42;
+                Random r = new Random();
+                double abnormalTemp = rangeMin + (rangeMax - rangeMin) * r.nextDouble();
+                sensedValue = abnormalTemp;
+                }
+           
 
-        if(sensedValue>=44 && sensedValue<=110){
+        if(sensedValue>=43 && sensedValue<=109){
             myNode.msgSpace.add(sensedValue);
 
             if(myNode.msgSpace.size()>0){
@@ -312,7 +338,7 @@ public class CSGPAP_App implements AppInterface, CallbackInterface {
             }
         }
 
-        if(sensedValue>=33 && sensedValue<=43){ 
+        if(sensedValue>=32 && sensedValue<=42){ 
             myNode.msgSpace2.add(sensedValue);
 //
             if(myNode.msgSpace2.size()>0){
@@ -345,7 +371,7 @@ public class CSGPAP_App implements AppInterface, CallbackInterface {
            }
       }
 
-        if(sensedValue>=18 && sensedValue<32){ 
+        if(sensedValue>=17 && sensedValue<31){ 
           myNode.msgSpace3.add(sensedValue);
 //
             if(myNode.msgSpace3.size()>0){

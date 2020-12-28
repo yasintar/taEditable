@@ -5,7 +5,7 @@
             <url>src/users/java/sidnet/stack/users/csgp_adaptivepath/routing/csgpaproutingmodif.java</url>
             <bookmark id="1">
                 <name/>
-                <line>247</line>
+                <line>0</line>
                 <key/>
             </bookmark>
         </file>
@@ -14,6 +14,14 @@
         <group>
             <file>file:/D:/routingrouting/routingRouting/src/users/java/sidnet/stack/users/csgp_adaptivepath/app/CSGPAP_App.java</file>
             <file>file:/D:/routingrouting/routingRouting/src/users/java/sidnet/stack/users/csgp_adaptivepath/routing/csgpaproutingmodif.java</file>
+            <file>file:/D:/routingrouting/routingRouting/src/main/java/sidnet/core/misc/Node.java</file>
+            <file>file:/D:/routingrouting/routingRouting/src/main/java/sidnet/core/misc/NodesList.java</file>
+            <file>file:/D:/routingrouting/routingRouting/importedpackages/jist-swans-1.0.6/src/jist/runtime/Controller.java</file>
+            <file>file:/D:/routingrouting/routingRouting/src/users/java/sidnet/stack/users/csgp_adaptivepath/app/MessageDataValue.java</file>
+            <file>file:/D:/routingrouting/routingRouting/src/users/java/sidnet/stack/users/csgp_adaptivepath/driver/CSGPAP_Driver.java</file>
+            <file>file:/D:/routingrouting/routingRouting/src/users/java/sidnet/stack/users/csgp_adaptivepath/routing/nodeygFull.java</file>
+            <file>file:/D:/routingrouting/routingRouting/importedpackages/jist-swans-1.0.6/src/jist/swans/Constants.java</file>
+            <file>file:/D:/routingrouting/routingRouting/src/users/java/sidnet/stack/users/csgp_adaptivepath/routing/kumpulNode.java</file>
         </group>
     </open-files>
 </project-private>
